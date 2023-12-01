@@ -1,0 +1,44 @@
+# Advent of Code 2023: Day 1
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Please paste your input here:")
+```
+
+## Part 1
+
+```elixir
+input
+|> Kino.Input.read()
+|> String.split("\n", trim: true)
+|> Enum.map(&String.graphemes/1)
+# Reduce our list of alphanumeric characters to just numeric characters.
+|> Enum.map(fn string_list ->
+  Enum.reduce(string_list, [], fn char, acc ->
+    if String.match?(char, ~r/\d/) do
+      acc ++ [char]
+    else
+      acc
+    end
+  end)
+end)
+# Take the first and last element of the list, or duplicate the element
+# in the event the list only contains 1 element.
+|> Enum.map(fn list ->
+  cond do
+    length(list) > 1 -> [hd(list) | Enum.take(list, -1)]
+    true -> list ++ list
+  end
+end)
+# Join the lists to a string and convert it to an integer.
+|> Enum.map(&(&1 |> Enum.join() |> String.to_integer()))
+|> Enum.sum()
+|> dbg()
+```
