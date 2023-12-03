@@ -6,36 +6,85 @@ Mix.install([
 ])
 ```
 
-## Input
+## Part 1
 
 ```elixir
 input = Kino.Input.textarea("Please paste your input here:")
 ```
 
-## Part 1
-
 ```elixir
+regex = ~r/(?=(one|two|three|four|five|six|seven|eight|nine|\d))/
+
 input
 |> Kino.Input.read()
 |> String.split("\n", trim: true)
-|> Enum.map(&String.graphemes/1)
-# Reduce our list of alphanumeric characters to just numeric characters.
-|> Enum.map(fn string_list ->
-  Enum.reduce(string_list, [], fn char, acc ->
-    if String.match?(char, ~r/\d/) do
-      acc ++ [char]
-    else
-      acc
+|> Enum.map(fn string ->
+  Regex.scan(regex, string, capture: :all)
+end)
+|> Enum.map(&List.flatten/1)
+|> Enum.map(&(&1 |> Enum.filter(fn char -> char != "" end)))
+# Take the first and last element of the list.
+|> Enum.map(fn list -> [hd(list) | Enum.take(list, -1)] end)
+# Join the lists to a string and convert it to an integer.
+|> Enum.map(&(&1 |> Enum.join() |> String.to_integer()))
+|> Enum.sum()
+|> dbg()
+```
+
+```elixir
+regex = ~r/(?=(one|two|three|four|five|six|seven|eight|nine|\d))/
+
+input
+|> Kino.Input.read()
+|> String.split("\n", trim: true)
+|> Enum.map(fn string ->
+  Regex.scan(regex, string, capture: :all)
+end)
+|> Enum.map(&List.flatten/1)
+|> Enum.map(&(&1 |> Enum.filter(fn char -> char != "" end)))
+# Take the first and last element of the list.
+|> Enum.map(fn list -> [hd(list) | Enum.take(list, -1)] end)
+# Join the lists to a string and convert it to an integer.
+|> Enum.map(&(&1 |> Enum.join() |> String.to_integer()))
+|> Enum.sum()
+|> dbg()
+```
+
+## Part 2
+
+```elixir
+input = Kino.Input.textarea("Please paste your input here:")
+```
+
+```elixir
+regex = ~r/(?=(one|two|three|four|five|six|seven|eight|nine|\d))/
+
+input
+|> Kino.Input.read()
+|> String.split("\n", trim: true)
+|> Enum.map(fn string ->
+  Regex.scan(regex, string)
+end)
+|> Enum.map(&List.flatten/1)
+|> Enum.map(&(&1 |> Enum.filter(fn char -> char != "" end)))
+# Take the first and last element of the list.
+|> Enum.map(fn list -> [hd(list) | Enum.take(list, -1)] end)
+# Convert eventual words into their integer equivalent.
+|> Enum.map(fn list ->
+  Enum.reduce(list, [], fn word, acc ->
+    case word do
+      "one" -> acc ++ ["1"]
+      "two" -> acc ++ ["2"]
+      "three" -> acc ++ ["3"]
+      "four" -> acc ++ ["4"]
+      "five" -> acc ++ ["5"]
+      "six" -> acc ++ ["6"]
+      "seven" -> acc ++ ["7"]
+      "eight" -> acc ++ ["8"]
+      "nine" -> acc ++ ["9"]
+      _ -> acc ++ [word]
     end
   end)
-end)
-# Take the first and last element of the list, or duplicate the element
-# in the event the list only contains 1 element.
-|> Enum.map(fn list ->
-  cond do
-    length(list) > 1 -> [hd(list) | Enum.take(list, -1)]
-    true -> list ++ list
-  end
 end)
 # Join the lists to a string and convert it to an integer.
 |> Enum.map(&(&1 |> Enum.join() |> String.to_integer()))
