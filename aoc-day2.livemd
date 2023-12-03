@@ -1,0 +1,84 @@
+# Advent of Code 2023: Day 2
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Part 1
+
+```elixir
+input = Kino.Input.textarea("Please paste your input here:")
+```
+
+```elixir
+defmodule Game do
+  @max_red 12
+  @max_green 13
+  @max_blue 14
+  defstruct [:id, red: 0, green: 0, blue: 0]
+
+  def update_game(game, roll) do
+    case [num, _colour] = String.split(roll, " ") do
+      [_, "red"] -> %{game | red: max(game.red, String.to_integer(num))}
+      [_, "green"] -> %{game | green: max(game.green, String.to_integer(num))}
+      [_, "blue"] -> %{game | blue: max(game.blue, String.to_integer(num))}
+    end
+  end
+
+  def possible?(game) do
+    if game.red <= @max_red and
+         game.green <= @max_green and
+         game.blue <= @max_blue do
+      true
+    else
+      false
+    end
+  end
+end
+```
+
+```elixir
+# input = """
+# Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+# Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+# Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+# Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+# Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
+# """
+
+# Parse the games into Game objects
+games =
+  input
+  |> Kino.Input.read()
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn game_as_string ->
+    id =
+      String.split(game_as_string, " ")
+      |> Enum.at(1)
+      |> String.replace(":", "")
+      |> String.to_integer()
+
+    [_, rolls_as_string] = String.split(game_as_string, ":")
+
+    game =
+      rolls_as_string
+      |> String.split(";")
+      |> Enum.map(&(&1 |> String.split(",")))
+      |> Enum.map(&(&1 |> Enum.map(fn entry -> String.trim(entry) end)))
+      |> List.flatten()
+      |> Enum.reduce(%Game{}, fn roll, game ->
+        Game.update_game(game, roll)
+      end)
+
+    %{game | id: id}
+  end)
+
+# Now determine whether any of the game meets the criteria
+sum =
+  Enum.filter(games, &Game.possible?/1)
+  |> Enum.reduce(0, fn game, acc ->
+    acc + game.id
+  end)
+```
