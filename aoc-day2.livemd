@@ -6,11 +6,7 @@ Mix.install([
 ])
 ```
 
-## Part 1
-
-```elixir
-input = Kino.Input.textarea("Please paste your input here:")
-```
+## Shared
 
 ```elixir
 defmodule Game do
@@ -20,10 +16,13 @@ defmodule Game do
   defstruct [:id, red: 0, green: 0, blue: 0]
 
   def update_game(game, roll) do
-    case [num, _colour] = String.split(roll, " ") do
-      [_, "red"] -> %{game | red: max(game.red, String.to_integer(num))}
-      [_, "green"] -> %{game | green: max(game.green, String.to_integer(num))}
-      [_, "blue"] -> %{game | blue: max(game.blue, String.to_integer(num))}
+    [num, colour] = String.split(roll, " ")
+    num = String.to_integer(num)
+
+    case colour do
+      "red" -> %{game | red: max(game.red, num)}
+      "green" -> %{game | green: max(game.green, num)}
+      "blue" -> %{game | blue: max(game.blue, num)}
     end
   end
 
@@ -36,8 +35,20 @@ defmodule Game do
       false
     end
   end
+
+  def sum_of_power(game) do
+    game.red * game.green * game.blue
+  end
 end
 ```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Please paste your input here:")
+```
+
+## Parse
 
 ```elixir
 # input = """
@@ -74,11 +85,25 @@ games =
 
     %{game | id: id}
   end)
+```
 
+## Part 1
+
+```elixir
 # Now determine whether any of the game meets the criteria
 sum =
   Enum.filter(games, &Game.possible?/1)
   |> Enum.reduce(0, fn game, acc ->
     acc + game.id
+  end)
+```
+
+## Part 2
+
+```elixir
+# Now get the sum of the power of all sets
+sum_of_power =
+  Enum.reduce(games, 0, fn game, acc ->
+    acc + Game.sum_of_power(game)
   end)
 ```
